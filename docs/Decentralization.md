@@ -87,17 +87,17 @@ export async function casper_login(on_connected) {
 ### - <u>Recording a Product</u>
 
 Each product has unique properties such as color, size, title, pictures, etc. The method `record_merch` is used to record a product on blockchain. The method inputs are as follows:  
-• sku_properties: the product’s information  
-• account_information: the information of the user who is recording the product. The information is available after the user’s login.  
+• sku_properties: the product's information  
+• account_information: the information of the user who is recording the product. The information is available after the user's login.  
 • product_title: the title of the product  
 • price: the price of the product  
 • amount: the quantity of the product  
-• commission: publisher’s commission of the product  
+• commission: publisher's commission of the product  
 The function `record_merch` then returns a `deploy_hash`.
 
 Product recording process consists of the following steps:
 
-1. The product information is uploaded on ipfs and an address is created for the product. This address can be used in a url as `ipfs.io/ipfs/{address}` to access the product’s information. `uploadToIPFS` gets the product’s metadata as input and uploads the metadata in ipfs to get an address. The function then returns the hash of that address.
+1. The product information is uploaded on ipfs and an address is created for the product. This address can be used in a url as `ipfs.io/ipfs/{address}` to access the product's information. `uploadToIPFS` gets the product's metadata as input and uploads the metadata in ipfs to get an address. The function then returns the hash of that address.
 2. The function `record_merch` returns a `deploy_hash`.
 3. `deploy_hash` is sent to backend and then to the web3 project.
 4. The `deploy_hash` is validated in the web3 project to verify the transaction.
@@ -216,8 +216,8 @@ export { record_merch };
 A publisher can send a request to the producer to access the recorded product for co-selling procedure. To send this request, the publisher calls the `publish_request` method. This method receives the following inputs:  
 • holder_id: the holder_id related to a recorded product that is stored in the producer's account  
 • amount: amount of the recorded products that the publisher requests to have access to (it is going to be omitted)  
-• producer_account_hash: producer’s account information hash  
-• account_info: publisher’s account information  
+• producer_account_hash: producer's account information hash  
+• account_info: publisher's account information  
 Upon calling the `publish_request` method a new `PublishRequest` is created which is identified by a `request_id`.
 
 ```javascript
@@ -282,6 +282,214 @@ export let publish_request = async function (
   const json = DeployUtil.deployToJson(deploy);
   console.log(publicKeyHex);
   console.log(json);
+  const signature = await getCasperWalletInstance()
+    .sign(JSON.stringify(json), publicKeyHex)
+    .catch((reason) => {
+      return "Cancelled";
+    });
+  const signedDeploy = DeployUtil.setSignature(
+    deploy,
+    signature.signature,
+    CLPublicKey.fromHex(publicKeyHex)
+  );
+  const deployres = await casper_consts.casperService.deploy(signedDeploy);
+  return { deploy: deployres, deployHash: deployres.deploy_hash };
+};
+```
+
+### - <u>Approving a Request</u>
+
+After creating a `request_id`, a new request is placed in the producer's incoming requests. To approve a publisher's request, the producer calls the `approve_request` method. This method receives the following inputs:  
+• request_id: the request that the producer tends to approve  
+• account_info: producer's account information  
+Upon approving a request, an `approved_id` is created for the request. The `approved_id` is saved in the web3 project.
+
+```javascript
+import {
+  CLPublicKey,
+  CLU64,
+  Contracts,
+  DeployUtil,
+  NamedArg,
+  RuntimeArgs,
+} from "casper-js-sdk";
+import * as casper_consts from "./constants";
+import { getCasperWalletInstance } from "./casper_wallet_auth";
+/**
+ * Approves the request with request_id using casper-signer
+ * @param {int} request_id
+ * @param {{'publicKey' : string , 'account_hash' : string, 'signature' : string}} account_info
+ * @returns
+ */
+export let approve_request = async function (request_id, account_info) {
+  const publicKeyHex = account_info.publicKey;
+  const publicKey = CLPublicKey.fromHex(publicKeyHex);
+  let gasPrice = 8941000000;
+  const ttl = 1800000;
+  let deployParams = new DeployUtil.DeployParams(
+    publicKey,
+    casper_consts.network,
+    1,
+    ttl
+  );
+  let contract_hash_string = casper_consts.contract_hash;
+  let contract_byte_array =
+    Contracts.contractHashToByteArray(contract_hash_string);
+  let named_args = [];
+  named_args.push(new NamedArg("request_id", new CLU64(request_id)));
+  let runtime_args = RuntimeArgs.fromNamedArgs(named_args);
+  const kk = DeployUtil.ExecutableDeployItem.newStoredContractByHash(
+    contract_byte_array,
+    "approve",
+    runtime_args
+  );
+  const payment = DeployUtil.standardPayment(gasPrice);
+  let deploy = DeployUtil.makeDeploy(deployParams, kk, payment);
+  const json = DeployUtil.deployToJson(deploy);
+  const signature = await getCasperWalletInstance()
+    .sign(JSON.stringify(json), publicKeyHex)
+    .catch((reason) => {
+      return "Cancelled";
+    });
+  const signedDeploy = DeployUtil.setSignature(
+    deploy,
+    signature.signature,
+    CLPublicKey.fromHex(publicKeyHex)
+  );
+  const deployres = await casper_consts.casperService.deploy(signedDeploy);
+  return { deploy: deployres, deployHash: deployres.deploy_hash };
+};
+```
+
+### - <u>Disapproving a Request</u>
+
+The producer can disapprove an approved request at any time, so the publisher would not have access to the product anymore. For disapproving a request, the `disapprove_request` method is called. This method receives the following inputs:  
+• approved_id: the id that represents an approved request  
+• publisher_account_hash: representing the publisher which the producer decided to disapprove  
+• account_info: producer's account information  
+By calling this function, the publisher's access to the product is disapproved.
+
+```javascript
+import {
+  CLAccountHash,
+  CLKey,
+  CLPublicKey,
+  CLU64,
+  Contracts,
+  DeployUtil,
+  NamedArg,
+  RuntimeArgs,
+} from "casper-js-sdk";
+import * as casper_consts from "./constants";
+import { getCasperWalletInstance } from "./casper_wallet_auth";
+/**
+ * Approves the request with request_id using casper-signer
+ * @param {int} request_id
+ * @param {{'publicKey' : string , 'account_hash' : string, 'signature' : string}} account_info
+ * @returns
+ */
+export let disapprove_request = async function (
+  approved_id,
+  amount,
+  publisher_account_hash,
+  account_info
+) {
+  const fromHexString = (hexString) =>
+    Uint8Array.from(
+      hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
+    );
+  let publisher_hash = new CLAccountHash(fromHexString(publisher_account_hash));
+  const publicKeyHex = account_info.publicKey;
+  const publicKey = CLPublicKey.fromHex(publicKeyHex);
+  let gasPrice = 8941000000;
+  const ttl = 1800000;
+  let deployParams = new DeployUtil.DeployParams(
+    publicKey,
+    casper_consts.network,
+    1,
+    ttl
+  );
+  let contract_hash_string = casper_consts.contract_hash;
+  let contract_byte_array =
+    Contracts.contractHashToByteArray(contract_hash_string);
+  let named_args = [];
+  named_args.push(new NamedArg("approved_id", new CLU64(approved_id)));
+  named_args.push(new NamedArg("amount", new CLU64(amount)));
+  named_args.push(new NamedArg("publisher-account", new CLKey(publisher_hash)));
+
+  let runtime_args = RuntimeArgs.fromNamedArgs(named_args);
+  const kk = DeployUtil.ExecutableDeployItem.newStoredContractByHash(
+    contract_byte_array,
+    "disapprove",
+    runtime_args
+  );
+  const payment = DeployUtil.standardPayment(gasPrice);
+  let deploy = DeployUtil.makeDeploy(deployParams, kk, payment);
+  const json = DeployUtil.deployToJson(deploy);
+  const signature = await getCasperWalletInstance()
+    .sign(JSON.stringify(json), publicKeyHex)
+    .catch((reason) => {
+      return "Cancelled";
+    });
+  const signedDeploy = DeployUtil.setSignature(
+    deploy,
+    signature.signature,
+    CLPublicKey.fromHex(publicKeyHex)
+  );
+  const deployres = await casper_consts.casperService.deploy(signedDeploy);
+  return { deploy: deployres, deployHash: deployres.deploy_hash };
+};
+```
+
+### - <u>Cancelling a Request</u>
+
+To cancel a request, the publisher needs to call the `cancel_request` method. This method receives the following input:  
+• request_id: the request that the publisher tends to cancel  
+• account_info: publisher's account information  
+`cancel_request` then removes the request.
+
+```javascript
+import {
+  CLPublicKey,
+  CLU64,
+  Contracts,
+  DeployUtil,
+  NamedArg,
+  RuntimeArgs,
+} from "casper-js-sdk";
+import * as casper_consts from "./constants";
+import { getCasperWalletInstance } from "./casper_wallet_auth";
+/**
+ * Approves the request with request_id using casper-signer
+ * @param {int} request_id
+ * @param {{'publicKey' : string , 'account_hash' : string, 'signature' : string}} account_info
+ * @returns
+ */
+export let cancel_request = async function (request_id, account_info) {
+  const publicKeyHex = account_info.publicKey;
+  const publicKey = CLPublicKey.fromHex(publicKeyHex);
+  let gasPrice = 8941000000;
+  const ttl = 1800000;
+  let deployParams = new DeployUtil.DeployParams(
+    publicKey,
+    casper_consts.network,
+    1,
+    ttl
+  );
+  let contract_hash_string = casper_consts.contract_hash;
+  let contract_byte_array =
+    Contracts.contractHashToByteArray(contract_hash_string);
+  let named_args = [];
+  named_args.push(new NamedArg("request_id", new CLU64(request_id)));
+  let runtime_args = RuntimeArgs.fromNamedArgs(named_args);
+  const kk = DeployUtil.ExecutableDeployItem.newStoredContractByHash(
+    contract_byte_array,
+    "cancel_request",
+    runtime_args
+  );
+  const payment = DeployUtil.standardPayment(gasPrice);
+  let deploy = DeployUtil.makeDeploy(deployParams, kk, payment);
+  const json = DeployUtil.deployToJson(deploy);
   const signature = await getCasperWalletInstance()
     .sign(JSON.stringify(json), publicKeyHex)
     .catch((reason) => {
