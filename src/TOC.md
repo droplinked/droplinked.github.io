@@ -1,4 +1,4 @@
-# <u>Droplinked Documentations</u>
+# <u>Droplinked Docs</u>
 
 On the droplinked protocol, we are registering products on chain and to enable 3rd party publishers to leverage these registered products and sell them across any marketplace, dapp or native site in order to earn commission. We are complimenting this with headless tooling for NFT Gated store fronts on droplinked.com and other valued added NFT solutions.
 
@@ -7,7 +7,7 @@ On the droplinked protocol, we are registering products on chain and to enable 3
 
 | **NO.** |                      **Title**                      |                                                **Description**                                               |
 |:-------:|:---------------------------------------------------:|:------------------------------------------------------------------------------------------------------------:|
-|    1    | [Contract interface (DRC-42)](ContractInterface.md) |  Droplinked's Smart-Contract Standard Interface Documentation, including Contract Methods & Payment Methods  |
+|    1    | [Smart Contracts](ContractInterface.md) |  Droplinked's Smart-Contract Standard Interface Documentation, including Contract Methods & Variables  |
 |    2    |          [Payment System](PaymentSystem.md)         | All payment types supported by Droplinked, and their process (Direct Pay, Pay for recorded Product and ...)  |
 |    3    |       [Decentralization](Decentralization.md)       |                   The process of decentralizing droplinked's products (Record + Affiliate)                   |
 |    4    |        [Payment Contract](PaymentContract.md)       |                    Droplinked's Smart Contract for Handling payments & Transferring tokens                   |
