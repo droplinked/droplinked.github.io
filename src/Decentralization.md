@@ -1,4 +1,3 @@
-<u>[Droplinked Documentations](README.md)</u> >> Decentralization
 
 # <u>Droplinked Decentralization</u>
 

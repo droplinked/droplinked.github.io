@@ -1,4 +1,3 @@
-<u>[Droplinked Documentations](README.md)</u> >> Payment Contract
 # <u>Droplinked Payment Contract</u>
 
 ## • <u>Payment Contract</u>

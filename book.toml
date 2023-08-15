@@ -1,0 +1,6 @@
+[book]
+authors = ["Mohammad matin"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Droplinked Docs"

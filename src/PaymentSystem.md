@@ -1,4 +1,3 @@
-<u>[Droplinked Documentations](README.md)</u> >> Payment System
 
 # <u>Droplinked Payment System</u>
 

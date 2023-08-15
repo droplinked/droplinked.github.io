@@ -1,4 +1,3 @@
-<u>[Droplinked Documentations](README.md)</u> >> Terminology & Terms
 
 # <u>Droplinked Terminology & Terms</u>
 

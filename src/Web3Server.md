@@ -1,4 +1,3 @@
-<u>[Droplinked Documentations](README.md)</u> >> QServer
 
 # <u>Droplinked Q-Server</u>
 Q-Server (Queue Server) is responsible for all interactions with blockchain on droplinked. It checks the deploys that are sent from our front-end and back-end, and verifys them when theu are submitted, keeps record of contract events, and does callbacks to backend when the status of a deploy is verified. Also, It is responsible for Ruleset-Gating & other APIs that have something to do with Web3. So, It's our gateway to Droplinked's Web3!
