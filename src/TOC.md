@@ -7,14 +7,15 @@ On the droplinked protocol, we are registering products on chain and to enable 3
 
 | **NO.** |                      **Title**                      |                                                **Description**                                               |
 |:-------:|:---------------------------------------------------:|:------------------------------------------------------------------------------------------------------------:|
-|    1    | [Smart Contracts](ContractInterface.md) |  Droplinked's Smart-Contract Standard Interface Documentation, including Contract Methods & Variables  |
+|    1    | [Contract interface (DRC-42)](ContractInterface.md) |  Droplinked's Smart-Contract Standard Interface Documentation, including Contract Methods & Payment Methods  |
 |    2    |          [Payment System](PaymentSystem.md)         | All payment types supported by Droplinked, and their process (Direct Pay, Pay for recorded Product and ...)  |
 |    3    |       [Decentralization](Decentralization.md)       |                   The process of decentralizing droplinked's products (Record + Affiliate)                   |
 |    4    |        [Payment Contract](PaymentContract.md)       |                    Droplinked's Smart Contract for Handling payments & Transferring tokens                   |
 |    5    |             [Web3 Server](Web3Server.md)            |                         Droplinked Queue Server documentation for it's implementation                        |
 |    6    | [Function Interface](functionInterface.md)          |                            Droplinked Front-end implementation function interfaces                           |
+|    7    |                [Swagger](Swagger.md)                |                                         Swagger documentation of APIs                                        |
+|    8    |      [Examples](examples.md)      |           Flow of implementation of multiple blockchain tasks          |
 |    -1   |           [Terminology & Terms](Terms.md)           |                                 Droplinked Ecosystem's Terminology & Glossary                                |
-
 
 ### • <u>Droplinked D-Commerce Stack</u>
 <img src="DroplinkedStack.png">

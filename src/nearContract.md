@@ -1,17 +1,9 @@
 
 ## <u>Contract Objects (Entities) </u>
 
-> _**Here we explain each structure used within the contract and how they are used**_
+> **Here we explain each structure used within the contract and how they are used**
 
-Each contract has a storage section which is used to store data. This data can be of any type, including structs. Also there are some built-in functionalities on different chains that can be leveraged for storing data. For example, we have the ability to store data in a dictionary on the Casper network (which is common in lots of chains). 
-
-_**Assuming we can use dictionaries, we use the following structures to store data in our contract:**_
-
-_No dictionary? move [here](nodict.md)_
-
-_No Loop in Contract Language? read [noLoop](noloop.md) docs_
-> - **NFTHolder** 
-
+Each contract has a storage section which is used to store data. This data can be of any type, including structs. Also there are some built-in functionalities on different chains that can be leveraged for storing data.
 
 ```rust
 /*
@@ -23,7 +15,7 @@ pub struct NFTHolder {
 }
 ```
 
-> - **NFTMetadata**
+- **NFTMetadata**
 
 ```rust
 /*
@@ -39,7 +31,7 @@ pub struct NFTMetadata {
 }
 ```
 
-> - **PublishRequest**
+- **PublishRequest**
 
 
 ```rust
@@ -55,7 +47,7 @@ pub struct PublishRequest {
 }
 ```
 
-> - **ApprovedNFT**
+- **ApprovedNFT**
 
 ```rust
 /*
