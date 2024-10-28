@@ -10,7 +10,7 @@ In this document we are going to see how to use this package and work with it.
 The first phase is to initialize the DropWeb3 Object in your util files. Define this object only once in your project and we're going to use it multiple times.
 
 ```typescript
-import { DropWeb3, Network } from '@droplinked/web3';
+import { DropWeb3, Network } from 'droplinked-web3';
 
 // The argument is the environment you are working in, you set it only once
 const web3 = new DropWeb3(Network.TESTNET);
@@ -33,10 +33,10 @@ In normal login, you specify the wallet address that you want the user to log-in
 To use this method you can use the code snippet below:
 
 ```typescript
-import { Chain, Network, ChainWallet } from '@droplinked/web3';
+import { Chain, Network, ChainWallet, Web3Actions } from 'droplinked-web3';
 // We use the `web3` object which we have already set-upped and have access to!
 const chainProvider = web3.web3Instance({
-	method: 'login', // This is the method you will be working with with this instance
+	method: Web3Actions.LOGIN, // This is the method you will be working with with this instance
 	chain: Chain.BASE, // The chain you want your user to be in when signing in
 	preferredWallet: ChainWallet.Metamask, // The wallet you want the user to use
 });
@@ -48,20 +48,10 @@ The result of running this code snippet has a structure of
 
 ```typescript
 {
-	address, signature, date, nonce;
-}
-```
-
-which would be something like this:
-
-```typescript
-{
-    "loginData": {
-        "address": "0xbec8c184a8f55e6443b315361bac3bbb2280e8e8",
-        "signature": "0xd4fb7e1a1009aba1a2fb6af94ca7d7bc1c2ff7ce1f46674162d3a92fd4f644e92467bb6361f8fa51c51bbb3a92d806bc5549dfb74e8a9f43efd780876abb26631b",
-        "date": "10/20/2024, 5:03:47 AM",
-        "nonce": 3721172
-    }
+    "address": "0xe29e7479c23db494aaa0d36c93844b2d79f50c25",
+    "signature": "0x1d1817e1e0b0447629517f9255d69d583ff110073b90b2444bf76d5be9419d095c76a101fa7cdb9d9623279897459f7e08b42514377ec13aa1efc8ad4005ad211b",
+    "date": "10/28/2024, 2:59:08 PM",
+    "nonce": "173788"
 }
 ```
 
@@ -101,7 +91,7 @@ The first step before recording any products, is to deploy the shop & nft contra
 ```typescript
 // Assuming the web3 is defined
 const chainProvider = web3.web3Instance({
-	method: 'deploy', // The function we will be using
+	method: Web3Actions.DEPLOY, // The function we will be using
 	chain: Chain.BASE, // The chain we are deploying the contracts on
 	preferredWallet: ChainWallet.Metamask, // The wallet the user will work with
 	userAddress: '0xbec8c184a8f55e6443b315361bac3bbb2280e8e8',
@@ -137,7 +127,7 @@ After the shop is deployed and verified, now you can record your first product. 
 ```typescript
 // Assuming the web3 is defined
 const chainInstance = web3.web3Instance({
-	method: 'record-affiliate',
+	method: Web3Actions.RECORD_AFFILIATE,
 	chain: Chain.BASE,
 	preferredWallet: ChainWallet.Metamask,
 	userAddress: '0xbec8c184a8f55e6443b315361bac3bbb2280e8e8',
@@ -207,7 +197,7 @@ Payment is very simplified in the package, you need to pass as little informatio
 
 ```typescript
 const chainInstance = web3.web3Instance({
-	method: 'payment',
+	method: Web3Actions.PAYMENT,
 	chain: Chain.BASE,
 	preferredWallet: ChainWallet.Metamask,
 	userAddress: '0xbec8c184a8f55e6443b315361bac3bbb2280e8e8',
@@ -215,6 +205,8 @@ const chainInstance = web3.web3Instance({
 
 const paymentResult = chainInstance.payment({
 	cartID: '62fab10fccd8ee9f0f920ca1',
+	paymentToken: 'BNB',
+	paymentType: 'BINANCE',
 	// For now that's it, but after implementation it may need more arguments
 });
 
