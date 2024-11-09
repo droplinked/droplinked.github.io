@@ -223,7 +223,7 @@ result: {
 
 ---
 
-## Claim NFT
+## 5.Claim NFT
 
 Make sure to use `droplinked-web3` package with at least 1.5.5 as the version.
 
