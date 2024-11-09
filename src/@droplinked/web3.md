@@ -205,9 +205,8 @@ const chainInstance = web3.web3Instance({
 
 const paymentResult = chainInstance.payment({
 	cartID: '62fab10fccd8ee9f0f920ca1',
-	paymentToken: 'BNB',
-	paymentType: 'BINANCE',
-	// For now that's it, but after implementation it may need more arguments
+	paymentToken: PaymentTokens.BNB,
+	paymentType: Chain.BINANCE,
 });
 
 console.log({ result: paymentResult });
