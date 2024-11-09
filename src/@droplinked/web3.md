@@ -224,6 +224,46 @@ result: {
 
 ---
 
+## Claim NFT
+
+Make sure to use `droplinked-web3` package with at least 1.5.5 as the version.
+
+### How to use claim nft?
+
+See the example below:
+
+```typescript
+import { Chain,  DropWeb3, Network, Web3Actions, 
+    ChainWallet, PurchaseSignature } from 'droplinked-web3';
+
+const signature: PurchaseSignature;
+// NOTE: Get signature from backend in the order
+
+const web3 = new DropWeb3(Network.TESTNET);
+const chain = web3.web3Instance({
+    method: Web3Actions.CLAIM,
+    chain: Chain.BINANCE,
+    preferredWallet: ChainWallet.Metamask,
+    userAddress: '0x...',
+    shopContractAddress: '0x...'
+});
+const txHash = await chain.claimNFTs({
+    signature: signature
+});
+
+console.log({ txHash });
+```
+
+The result should be like this:
+
+```typescript
+{
+    txHash: '0x...'
+}
+```
+
+---
+
 > Additional notes:
 >
 > - Since the affiliate section is moving from web3 to web2, and is not as important as other parts, it's documentation will be added after above methods are completely done.
