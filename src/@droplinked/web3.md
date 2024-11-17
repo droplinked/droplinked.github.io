@@ -143,13 +143,10 @@ const recordResult = await chainInstance.recordProduct(
 		commission: 0,
 		type: ProductType.DIGITAL,
 		acceptsManageWallet: true,
-		currencyAddress: '0x0000000000000000000000000000000000000000',
 	},
 	[
 		{
 			amount: 1,
-			price: 100,
-			beneficiaries: [],
 			skuProperties: {},
 			skuID: '670fcb2ea6738730848f8933',
 			imageUrl: 'https://k3rn3lpanic.img',
@@ -170,16 +167,6 @@ recordResult: {
 Notes:
 
 - The nftContractAddress and shopContract address are the results of shop-deployment
-- The `price` is in cents, meaning if you want to set your product for 0.01$, you send 1 as the price, so send the $\*100 as the input
-- beneficiaries: This is the list of beneficiaries that the contract will consider in the purchase step, the type of each element is like this:
-
-```typescript
-type Beneficiary = {
-	isPercentage: boolean; // Means that this beneficiary will get it's share in percentage format
-	value: number; // Based on the previous value, means the percentage (*100) or the direct value
-	wallet: string; // The wallet address to which the funds will be transferred to in payment
-};
-```
 
 Normally you would leave it empty, just in the POD product type, we set 1 beneficiary for it which is the base cost.
 
@@ -232,22 +219,28 @@ Make sure to use `droplinked-web3` package with at least 1.5.5 as the version.
 See the example below:
 
 ```typescript
-import { Chain,  DropWeb3, Network, Web3Actions, 
-    ChainWallet, PurchaseSignature } from 'droplinked-web3';
+import {
+	Chain,
+	DropWeb3,
+	Network,
+	Web3Actions,
+	ChainWallet,
+	PurchaseSignature,
+} from 'droplinked-web3';
 
 const signature: PurchaseSignature;
 // NOTE: Get signature from backend in the order
 
 const web3 = new DropWeb3(Network.TESTNET);
 const chain = web3.web3Instance({
-    method: Web3Actions.CLAIM,
-    chain: Chain.BINANCE,
-    preferredWallet: ChainWallet.Metamask,
-    userAddress: '0x...',
-    shopContractAddress: '0x...'
+	method: Web3Actions.CLAIM,
+	chain: Chain.BINANCE,
+	preferredWallet: ChainWallet.Metamask,
+	userAddress: '0x...',
+	shopContractAddress: '0x...',
 });
 const txHash = await chain.claimNFTs({
-    signature: signature
+	signature: signature,
 });
 
 console.log({ txHash });
@@ -257,7 +250,7 @@ The result should be like this:
 
 ```typescript
 {
-    txHash: '0x...'
+	txHash: '0x...';
 }
 ```
 
