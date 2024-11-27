@@ -4,5 +4,5 @@
 - [Web3 Package](./@droplinked/web3.md)
 - [Swagger](./Swagger.md)
 - [Terminology & Terms](./Terms.md)
-- [Droplinked Backend Documentation](./@droplinked-backend/index.md)
-  - [Ruleset](./@droplinked/backend/ruleset.md)
+- [Droplinked Backend Documentation](./backend/index.md)
+     - [Ruleset](./backend/ruleset.md)
