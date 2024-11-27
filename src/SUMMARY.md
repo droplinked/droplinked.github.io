@@ -6,3 +6,4 @@
 - [Terminology & Terms](./Terms.md)
 - [Droplinked Backend Documentation](./backend/index.md)
      - [Ruleset](./backend/ruleset.md)
+     - [Product](./backend/product.md)
