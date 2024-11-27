@@ -4,4 +4,4 @@ Welcome to the **Droplinked Backend Documentation**. This documentation provides
 
 ## Table of Contents
 
-- [RuleSet Feature](./ruleset.md)
+- [RuleSet Feature](./@droplinked/backend/ruleset.md)
