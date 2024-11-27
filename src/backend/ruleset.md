@@ -77,7 +77,7 @@ The `RuleSetV2` schema defines the structure of a RuleSet. Below is a descriptio
   "collectionID": "6332a65d26038728b5aa9e43",
   "passedNftDetails": []
 }
-
+````
 
 
 # Mint to Merch (M2M) Feature Documentation
