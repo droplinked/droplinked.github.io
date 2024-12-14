@@ -7,31 +7,6 @@ The Cart module manages the shopping cart functionality, including creating anon
 1. **Controller**: Handles HTTP requests and API endpoints.
 2. **Service**: Contains the business logic for managing carts.
 
----
-
-## Cart Controller
-
-### `createAnonymousCart` Endpoint
-
-- **Description**: Allows public users to create an anonymous cart.
-- **Route**: `POST /public/anonymous-cart`
-- **Functionality**:
-  - Calls the `createAnonymousCart` method from the `CartService`.
-  - Returns the created cart object in the response.
-- **Swagger Metadata**:
-  - `@ApiOperation`: Describes the API operation.
-  - `@ApiResponse`: Defines the expected HTTP response structure.
-
----
-
-## Cart Service
-
-### `createAnonymousCart`
-
-- **Description**: 
-  - Interacts with the Cart repository to create an anonymous cart.
-  - Sets the cart type to `ANONYMOUS`.
-- **Returns**: The newly created anonymous cart object.
 
 ---
 
@@ -46,22 +21,155 @@ To view the relationships and structure of the `Cart`, `Item`, and related model
 This link opens the Mermaid diagram in the Mermaid Live Editor, allowing you to view, edit, or export the diagram as needed.
 
 
-## addProductToCartV2 Service
-## Step 1: Initial Validation
+# Cart Logic in Droplinked Platform
 
-### Description
-The first step ensures the integrity of input data before proceeding with adding a product to the cart. This is done by calling the `addToCartInitialValidation` function, which checks:
+The **Cart** system in Droplinked handles product types, shipping costs, taxes, commissions, and discounts. This document outlines the logic and calculations for the cart.
 
-- `skuID` and `shopID` are valid ObjectIds.
-- Anonymous carts cannot include a wallet address.
-- Authenticated users can only add products from shops they own.
+---
 
-### Code
-```typescript
-await this.addToCartInitialValidation(
-  query.skuID,
-  anonymous,
-  query?.wallet,
-  query?.ownerID,
-  query?.shopID,
-);
+## Product Types
+
+Droplinked supports the following product types:
+
+### 1. **Physical Products**
+- Products uploaded by sellers.
+- **Shipping Methods**:
+  - **EasyPost Shipping**: Managed by Droplinked.
+  - **Custom Shipping**: Managed by the seller; products remain with the producer.
+
+### 2. **Print-on-Demand Products**
+- User-designed products manufactured after purchase.
+- **Shipping Method**: Only **EasyPost Shipping** is used.
+- Includes **production costs** (e.g., $30 production cost, $50 selling price).
+
+### 3. **Digital Products**
+- Non-physical products, such as files or software.
+- No shipping required.
+
+### 4. **Events**
+- Tickets or access to events.
+- No shipping required.
+
+---
+
+## Key Cart Logic
+
+### 1. **Shipping Costs**
+- **EasyPost & Print-on-Demand Products**:
+  - Shipping costs are calculated by Droplinked and belong to Droplinked.
+
+- **Custom Shipping**:
+  - Sellers define shipping costs, and these belong to the seller.
+
+---
+
+### 2. **Taxes**
+Taxes are calculated based on the buyer's location.
+
+#### Tax Distribution:
+- **Physical Products, Digital Products, and Events**: Taxes belong to the seller.
+- **Print-on-Demand Products**: Taxes belong to Droplinked.
+
+---
+
+### 3. **Commissions**
+Droplinked applies the following commissions:
+
+#### **Platform Commission**
+- 1% of the cart's total value is charged as a platform fee.
+
+#### **Stripe Commission**
+- If Stripe is used for payment, 3% of the cart value is charged.
+
+#### **Affiliate Sales Commission**
+- Sellers can set a commission percentage for affiliates.
+- The affiliate's share is calculated based on the seller's profit after deducting production costs (if applicable).
+
+---
+
+### 4. **Discount Logic**
+Droplinked supports three types of discounts, but **only one** can be applied at a time:
+
+#### **RuleSet Discount** (e.g., NFT Discounts):
+- Applied to the seller’s profit only.
+- Droplinked’s share, shipping, and taxes remain unaffected.
+
+#### **Percentage Coupons**:
+- Applied to the total cart value and split proportionally among items based on their profit contribution.
+
+#### **Gift Cards** (Fixed Amount Coupons):
+- A fixed dollar amount deducted from the cart total.
+- Distributed among items proportionally based on their profit contribution.
+
+---
+
+### 5. **Key Calculations**
+
+#### **Total Item Price**
+`Unit Price × Quantity`
+
+#### **Profit Calculations**
+- **Print-on-Demand Products**:  
+  `Total Item Price - (Production Cost × Quantity)`
+- **Other Products**:  
+  `Total Item Price`
+
+#### **Affiliate Commission**
+`Profit × Affiliate Commission Percentage`
+
+#### **Discount Calculations**
+- **RuleSet Discount**:  
+  `Profit After Affiliate Commission × Discount Percentage`
+- **Percentage Coupons & Gift Cards**:  
+  Split proportionally among items based on profit.
+
+#### **Seller's Adjusted Profit**
+`Profit - Affiliate Commission - Discounts - Platform Commissions`
+
+#### **Droplinked’s Share**
+- Platform Commission: 1% of the item price.
+- Stripe Commission: 3% (if applicable).
+- Shipping Costs: For EasyPost and Print-on-Demand.
+- Taxes: For Print-on-Demand.
+
+---
+
+### 6. **Final Total Payable by Customer**
+`Sum of Item Prices + Shipping Costs + Taxes - Total Discounts`
+
+#### Constraints:
+- The total amount must at least cover Droplinked’s share, shipping costs, and applicable taxes.  
+- If insufficient, the deficit is deducted from the seller's credit.
+
+---
+
+## Example Calculation
+
+### Scenario:
+A customer buys a Print-on-Demand product for $50 with a production cost of $30. The customer uses an NFT for a 10% discount, and the affiliate commission is 50%.
+
+### Steps:
+
+1. **Item Price**: $50  
+2. **Profit**: $50 - $30 = $20  
+3. **Affiliate Commission**: $20 × 50% = $10  
+4. **NFT Discount**: ($20 - $10) × 10% = $1  
+5. **Adjusted Seller Profit**: $20 - $10 - $1 = $9  
+6. **Droplinked’s Share**:  
+   - Platform Fee: $50 × 1% = $0.50  
+   - Stripe Fee: $50 × 3% = $1.50  
+7. **Final Seller Profit**: $9  
+8. **Customer Total Payment**:  
+   $50 (item price) - $1 (NFT discount) = $49  
+
+---
+
+## Important Notes
+
+1. **Discount Exclusivity**: Only one discount can be applied at a time.  
+2. **Droplinked's Protections**: Discounts do not affect Droplinked’s share, shipping costs, or applicable taxes.  
+3. **Credit Adjustment**: If the cart value is insufficient, the seller's credit is used to cover Droplinked’s share.
+
+---
+
+This document ensures clarity and fairness in the distribution of profits and proper handling of taxes, commissions, and discounts while maintaining Droplinked’s share.
