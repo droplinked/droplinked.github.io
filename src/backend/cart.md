@@ -109,3 +109,24 @@ erDiagram
     Item ||--o{ Shops : "sold by"
     Item ||--o{ User : "owned by"
     Item ||--o{ Nft : "optionally references"
+```
+
+## addProductToCartV2 Service
+## Step 1: Initial Validation
+
+### Description
+The first step ensures the integrity of input data before proceeding with adding a product to the cart. This is done by calling the `addToCartInitialValidation` function, which checks:
+
+- `skuID` and `shopID` are valid ObjectIds.
+- Anonymous carts cannot include a wallet address.
+- Authenticated users can only add products from shops they own.
+
+### Code
+```typescript
+await this.addToCartInitialValidation(
+  query.skuID,
+  anonymous,
+  query?.wallet,
+  query?.ownerID,
+  query?.shopID,
+);
