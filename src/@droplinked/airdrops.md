@@ -2,85 +2,79 @@
 
 ## Overview
 
-This document outlines the implementation of a multi-chain Airdrop feature including:
+This document outlines the implementation of a multi-chain Airdrop feature, covering the following components:
 
-1. Smart Contract (Solidity)
-2. Web3 Package (NPM)
-3. Web3 Service (Web3 project)
-4. Backend Service (NestJS)
-5. Frontend Integration (shopBuilder)
+1. **Smart Contract (Solidity)** - On-chain contract for distributing ERC20, ERC721, and ERC1155 tokens.
+2. **Web3 Package (NPM)** - A package to abstract blockchain and wallet interactions for the frontend.
+3. **Web3 Service (NestJS)** - Backend service for retrieving NFT details.
+4. **Backend Service (NestJS)** - Storing transaction details and verifying airdrop status.
+5. **Frontend Integration (ShopBuilder)** - User interface to manage and perform airdrops.
 
 ---
 
 ## 1. Smart Contract Specification
 
-There are 3 main functions on the airdrop smart contract, which are these:
+A dedicated smart contract will be deployed with the following functions:
 
 ```solidity
 function distributeERC721(
-        address token,
-        address[] calldata recipients,
-        uint256[] calldata tokenIds,
-        string memory airdropId
-    )
+    address token,
+    address[] calldata recipients,
+    uint256[] calldata tokenIds,
+    string memory airdropId
+)
 ```
 
 ```solidity
 function distributeERC1155(
-        address token,
-        uint256 tokenId,
-        address[] calldata recipients,
-        uint256 amount,
-        string memory airdropId
-    )
+    address token,
+    uint256 tokenId,
+    address[] calldata recipients,
+    uint256 amount,
+    string memory airdropId
+)
 ```
 
 ```solidity
 function distributeERC20(
-        address token,
-        address[] calldata recipients,
-        uint256[] calldata amounts,
-        string memory airdropId
-    )
+    address token,
+    address[] calldata recipients,
+    uint256[] calldata amounts,
+    string memory airdropId
+)
 ```
 
-Each call to the contract can transfer up to 300 assets.
+- Each function executes a batch airdrop with a limit of **300 recipients per transaction**.
+- If the number of recipients exceeds 300, multiple transactions will be created.
 
 ---
 
-## 2. Web3 package specification
+## 2. Web3 Package Specification
 
-A new Web3Action will be added to web3 package, with which you can execute an airdrop of any asset within the standards of `ERC20`-`ERC721`-`ERC1155`.
+A new `Web3Action` will be introduced for airdrop execution. The package will facilitate token transfers based on predefined standards (`ERC20`, `ERC721`, `ERC1155`).
 
-Usage of the web3 package for airdrop execution:
+### **Usage Example**
 
 ```typescript
 const provider = web3.web3Instance({
-    method: Web3Actions.AIRDROP,
-    chain: Chain[chain],
-    preferredWallet: ChainWallet.Metamask,
+	method: Web3Actions.AIRDROP,
+	chain: Chain[chain],
+	preferredWallet: ChainWallet.Metamask,
 });
 
 const txHashes: string[] = provider.airdrop({
-    type: TokenStandard.ERC1155,
-    tokenAddress: "0x....",
-    tokenId: 1,
-    receivers: [
-        {
-            receiver: "0x....",
-            amount: 1
-        },
-        {
-            receiver: "0x....",
-            amount: 2
-        },
-        ...
-    ],
-    airdropId: '14231264ab698db6a9sd6c',
+	type: TokenStandard.ERC1155,
+	tokenAddress: '0x....',
+	tokenId: 1,
+	receivers: [
+		{ receiver: '0x....', amount: 1 },
+		{ receiver: '0x....', amount: 2 },
+	],
+	airdropId: '14231264ab698db6a9sd6c',
 });
 ```
 
-The other variants of calling the package:
+### **Airdrop Input Variants**
 
 ```typescript
 {
@@ -105,14 +99,22 @@ The other variants of calling the package:
 }
 ```
 
-All of this variants, will return a list of transaction hashes of the airdrop as the output which must be sent to backend for verification.
+- Each call returns a list of **transaction hashes**.
+- The frontend will send these transaction hashes to the backend for verification.
 
 ---
 
-## 3. Web3 service
+## 3. Web3 Service (NFT Fetching)
 
-- Fetch nfts route in web3 services: `GET /fetch-nft/fetchNFTs`
-- inputs:
+A new API route will be introduced to fetch all NFTs owned by a given wallet on different chains.
+
+### **Endpoint: Fetch NFTs**
+
+**Request:**
+
+- **Method:** `GET`
+- **Route:** `/fetch-nft/fetchNFTs`
+- **Payload:**
 
      ```js
      {
@@ -123,38 +125,106 @@ All of this variants, will return a list of transaction hashes of the airdrop as
      }
      ```
 
-- outputs:
+**Response:**
 
-     ```js
-     {
-     	collectionName: string;
-     	imageUrl: string;
-     	description: string;
-     	tokenContractAddress: string;
-     	tokenId: number;
-     }
-     [];
-     ```
+```js
+[
+  {
+      collectionName: string;
+      imageUrl: string;
+      description: string;
+      tokenContractAddress: string;
+      tokenId: number;
+  }
+]
+```
 
 ---
 
-## 4. Backend Service
+## 4. Backend Service (Airdrop Management)
 
-Backend needs 3 routes, one for fetching the list of NFTs of the user given the wallet address, one route for getting the list of transaction hashes from front-end, and verifying them using web3 services and one for the callback from the web3.
+The backend will handle:
 
-First route is the `POST /nfts/airdrop` which gets the detail of the airdrop (tokenAddress, tokenId, receivers and the amounts each receiver will get), and returns an airdropId.
+- Fetching NFTs from web3 services.
+- Storing airdrop transaction details.
+- Verifying transactions.
 
-Second route is the `GET /nfts/:chain/:walletAddress` which will return the list of NFTs by calling the web3 services (the output of this route is the same as the web3 services one!).
+### **API Routes**
 
-Third route is the `POST /nfts/airdrop/:airdropId` which gets the list of transaction hash in it's body like this:
+#### **1. Create Airdrop**
+
+- **Method:** `POST`
+- **Route:** `/nfts/airdrop`
+- **Payload:**
 
 ```js
 {
-    transactionId: [ "tx1_hash", "tx2_hash", ... ],
-    airdropId: 'a126489b96d61ef96f'
+    tokenAddress: string;
+    tokenId?: number;
+    receivers: { receiver: string; amount?: number }[];
 }
 ```
 
-Then it will call the transaction checking route of web3 as usual and wait for its callback.
+- **Response:**
 
-Fourth route is the callback route `POST /nfts/callback/airdrop/:airdropId/:transactionId` which will be called by the web3 services. This route will save the airdrop information in a collection by the airdropId.
+```js
+{
+	airdropId: 'a126489b96d61ef96f';
+}
+```
+
+#### **2. Fetch NFTs for User**
+
+- **Method:** `GET`
+- **Route:** `/nfts/:chain/:walletAddress`
+- **Response:** (Same as Web3 service response)
+
+#### **3. Submit Transaction Hashes**
+
+- **Method:** `POST`
+- **Route:** `/nfts/airdrop/:airdropId`
+- **Payload:**
+
+```js
+{
+    transactionId: ["tx1_hash", "tx2_hash", ...]
+}
+```
+
+#### **4. Transaction Verification Callback**
+
+- **Method:** `POST`
+- **Route:** `/nfts/callback/airdrop/:airdropId/:transactionId`
+- **Action:** Saves airdrop status and updates transaction history.
+
+---
+
+## 5. Frontend (ShopBuilder)
+
+Frontend will allow users to:
+
+- **Connect Wallet** and **Fetch NFTs**.
+- **Airdrop NFTs** to multiple addresses by:
+     - **Manual Input**
+     - **Uploading an Excel file (Predefined Template)**
+- **Monitor Airdrop Status**
+
+### **Steps in UI:**
+
+1. **User connects their wallet** → Fetches owned NFTs.
+2. **User selects an NFT** → Inputs recipient addresses or uploads a file.
+3. **User initiates airdrop** → Calls Web3 package.
+4. **Frontend receives transaction hashes** → Sends to the backend.
+5. **Backend verifies transactions** → Confirms airdrop completion.
+
+---
+
+## Summary
+
+- **Smart Contract** enables airdrop for ERC20, ERC721, and ERC1155 tokens.
+- **Web3 Package** abstracts blockchain interactions.
+- **Web3 Service** provides NFT ownership details.
+- **Backend** stores and verifies transactions.
+- **Frontend** allows users to select NFTs and initiate airdrops.
+
+This document serves as a guideline for developers to implement the airdrop feature efficiently.
