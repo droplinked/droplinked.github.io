@@ -37,7 +37,6 @@ import { Chain, Network, ChainWallet, Web3Actions } from 'droplinked-web3';
 // We use the `web3` object which we have already set-upped and have access to!
 const chainProvider = web3.web3Instance({
 	method: Web3Actions.LOGIN, // This is the method you will be working with with this instance
-	chain: Chain.BASE, // The chain you want your user to be in when signing in
 	preferredWallet: ChainWallet.Metamask, // The wallet you want the user to use
 });
 const loginData = await chainProvider.walletLogin();
