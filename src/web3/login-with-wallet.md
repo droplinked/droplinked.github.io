@@ -1,8 +1,8 @@
-# Login with Wallet in Shop Frante
+# Login with Wallet in Shop Front
 
 ## Overview
 
-This document describes the implementation of a wallet-based login feature in Shop Frante. The system leverages a Web3 package to interact with users' wallets for authentication and a backend service to verify signatures and issue JWT tokens.
+This document describes the implementation of a wallet-based login feature in Shop Front. The system leverages a Web3 package to interact with users' wallets for authentication and a backend service to verify signatures and issue JWT tokens.
 
 ## Components
 
