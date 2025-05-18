@@ -10,7 +10,7 @@ This document describes the implementation of a wallet-based login feature in Sh
 -   **Web3 Package**: Handles wallet connection, nonce retrieval, and signature prompt.
 -   **Backend**: Provides nonce generation/storage and signature verification, then issues JWT.
 
-## Architecture Diagram
+## Sequence Diagram
 
 ```mermaid
 sequenceDiagram
